@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Hormuz Run '86 - Petro-Political Satire Edition</title>
+<style>
+  :root{
+    --bg:#05080a;
+    --green:#39ff88;
+    --amber:#ffcc33;
+    --red:#ff3b3b;
+    --cyan:#3ee7ff;
+    --blue:#0b4cff;
+    --dim:#13351f;
+  }
+  *{box-sizing:border-box; user-select:none;}
+  html, body{
+    margin:0;
+    min-height:100%;
+    background:#030405;
+    color:var(--green);
+    font-family:"Courier New", Courier, monospace;
+    overflow:hidden;
+  }
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:14px;
+  }
+  #frame{
+    position:relative;
+    width:min(100vw - 28px, 1000px);
+    aspect-ratio:16/10;
+    min-height:520px;
+    border:5px solid var(--green);
+    box-shadow:0 0 20px #22ff7788, inset 0 0 25px #22ff7733;
+    background:radial-gradient(circle at center, #08120f 0%, #030405 70%);
+    overflow:hidden;
+  }
+  #frame::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.055) 0,
+      rgba(255,255,255,0.055) 1px,
+      rgba(0,0,0,0.10) 2px,
+      rgba(0,0,0,0.10) 4px
+    );
+    mix-blend-mode:screen;
+    z-index:10;
+  }
+  #frame::after{
+    content:"";
+    position:absolute;
+    inset:-20px;
+    pointer-events:none;
+    background:radial-gradient(circle at center, transparent 55%, rgba(0,0,0,.65) 100%);
+    z-index:11;
+  }
+  canvas{
+    display:block;
+    width:100%;
+    height:100%;
+    image-rendering:pixelated;
+    background:#061014;
+  }
+  #hud{
+    position:absolute;
+    left:14px; right:14px; top:12px;
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-weight:bold;
+    font-size:clamp(12px, 1.55vw, 18px);
+    letter-spacing:1px;
+    text-shadow:0 0 8px var(--green);
+    z-index:20;
+  }
+  #hud span{white-space:nowrap;}
+  #oil.oilShock{
+    color:var(--amber);
+    text-shadow:0 0 14px var(--amber);
+    animation:oilPulse .22s steps(2,end) infinite;
+  }
+  @keyframes oilPulse{
+    0%{transform:translateY(0); filter:brightness(1);}
+    50%{transform:translateY(-1px); filter:brightness(1.8);}
+    100%{transform:translateY(0); filter:brightness(1);}
+  }
+  #panic.panicHot{
+    color:var(--red);
+    text-shadow:0 0 14px var(--red);
+    animation:oilPulse .18s steps(2,end) infinite;
+  }
+  #ticker{
+    position:absolute;
+    left:14px; right:14px; bottom:10px;
+    z-index:20;
+    height:30px;
+    border:2px solid var(--green);
+    background:rgba(0,12,8,.86);
+    overflow:hidden;
+    box-shadow:0 0 12px #22ff7744;
+  }
+  #ticker::before{
+    content:"SAT-NEWS 24/7";
+    position:absolute;
+    left:0; top:0; bottom:0;
+    display:flex; align-items:center;
+    padding:0 10px;
+    color:#001508;
+    background:var(--amber);
+    font-weight:bold;
+    z-index:2;
+  }
+  #tickerText{
+    position:absolute;
+    left:132px;
+    top:6px;
+    white-space:nowrap;
+    color:var(--amber);
+    font:bold 15px "Courier New", Courier, monospace;
+    text-shadow:0 0 8px #ffcc3377;
+  }
+
+  #msg{
+    position:absolute;
+    inset:0;
+    z-index:30;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:28px;
+    background:rgba(0,0,0,.68);
+  }
+  #panel{
+    border:3px double var(--green);
+    padding:22px 24px;
+    max-width:760px;
+    background:rgba(0,15,10,.86);
+    box-shadow:0 0 26px #22ff7777;
+  }
+  h1{
+    margin:0 0 8px;
+    color:var(--amber);
+    font-size:clamp(28px, 5.2vw, 58px);
+    line-height:1;
+    letter-spacing:3px;
+    text-shadow:0 0 12px #ffcc3388;
+  }
+  h2{
+    color:var(--cyan);
+    margin:6px 0 14px;
+    font-size:clamp(14px,2.2vw,22px);
+    font-weight:normal;
+  }
+  p, li{
+    font-size:clamp(14px, 1.8vw, 18px);
+    line-height:1.32;
+  }
+  .small{font-size:clamp(11px, 1.5vw, 14px); color:#aaffc4; opacity:.9;}
+  .buttonline{
+    display:inline-block;
+    margin-top:12px;
+    padding:8px 14px;
+    color:#001508;
+    background:var(--green);
+    font-weight:bold;
+    box-shadow:0 0 16px #22ff7777;
+  }
+  #touchControls{
+    display:none;
+    position:absolute;
+    z-index:40;
+    left:0; right:0; bottom:12px;
+    justify-content:space-between;
+    padding:0 20px;
+    pointer-events:none;
+  }
+  .pad, .actionPad{display:flex; gap:10px; pointer-events:auto;}
+  .tbtn{
+    width:54px; height:54px;
+    border:2px solid var(--green);
+    color:var(--green);
+    background:rgba(0,0,0,.45);
+    font:bold 24px Courier, monospace;
+    box-shadow:0 0 10px #22ff7755;
+  }
+  .tbtn:active{background:rgba(57,255,136,.25);}
+  @media (hover:none), (max-width:780px){
+    #touchControls{display:flex;}
+    #frame{min-height:500px;}
+  }
+</style>
+</head>
+<body>
+<div id="frame">
+  <canvas id="game" width="960" height="600" aria-label="Hormuz Run 1980s style tanker arcade game"></canvas>
+  <div id="hud">
+    <span id="score">SCORE 000000</span>
+    <span id="cargo">CARGO 100%</span>
+    <span id="oil">OIL $68.00</span>
+    <span id="speed">KNOTS 08</span>
+    <span id="dist">DIST 0%</span>
+    <span id="panic">PANIC 00</span>
+  </div>
+  <div id="ticker"><span id="tickerText">WIRE SERVICE: Markets are calm, which experts agree is suspicious.</span></div>
+  <div id="msg">
+    <div id="panel">
+      <h1>HORMUZ RUN '86</h1>
+      <h2>Petro-political satire edition — fictional arcade scenario</h2>
+      <p>You are the captain of a fuel tanker crossing a hostile chokepoint while anchors yell, markets panic, lobbyists invoice, and officials promise everything is under control.</p>
+      <p><b>Controls:</b> Arrow keys/WASD to steer · Space for emergency flare burst · P to pause · M to mute · Enter to start/restart.</p>
+      <p class="small">Satire note: fictional officials, fictional pundits, fictional panic. This is an arcade abstraction, not a real navigation, tactical, or market simulation.</p>
+      <span class="buttonline">PRESS ENTER / TAP TO START</span>
+    </div>
+  </div>
+  <div id="touchControls">
+    <div class="pad">
+      <button class="tbtn" data-key="ArrowLeft">◀</button>
+      <button class="tbtn" data-key="ArrowUp">▲</button>
+      <button class="tbtn" data-key="ArrowDown">▼</button>
+      <button class="tbtn" data-key="ArrowRight">▶</button>
+    </div>
+    <div class="actionPad">
+      <button class="tbtn" data-key="Space">✹</button>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const scoreEl = document.getElementById('score');
+  const cargoEl = document.getElementById('cargo');
+  const oilEl = document.getElementById('oil');
+  const speedEl = document.getElementById('speed');
+  const distEl = document.getElementById('dist');
+  const panicEl = document.getElementById('panic');
+  const tickerTextEl = document.getElementById('tickerText');
+  const msg = document.getElementById('msg');
+  const panel = document.getElementById('panel');
+
+  const W = canvas.width, H = canvas.height;
+  const keys = new Set();
+  const palette = {
+    sea:'#071a24', sea2:'#0a2933', lane:'#0f4e58', green:'#39ff88', dim:'#124d2b', amber:'#ffcc33', red:'#ff3b3b', cyan:'#3ee7ff', white:'#d8ffe9'
+  };
+
+  let state = 'title';
+  let tick = 0, score = 0, distance = 0, difficulty = 1;
+  let spawnMine = 0, spawnBoat = 0, spawnMissile = 0, spawnStorm = 0;
+  let hazards = [], particles = [], warnings = [];
+  let shake = 0, flareCooldown = 0, pauseShown = false;
+  let oilPrice = 68.00, oilShock = 0;
+  let panicIndex = 0, lobbyPressure = 0, inquiryCount = 0, denialCount = 0;
+  let newsFlash = 0, newsText = 'Markets are calm, which experts agree is suspicious.';
+  let tickerOffset = 0;
+  let muted = false;
+  let audioCtx = null, musicTimer = null, musicStep = 0;
+
+  const ship = {
+    x: W * 0.22, y: H * 0.50, w: 78, h: 26,
+    vx:0, vy:0, speed:2.1, cargo:100,
+    inv:0, flare:0
+  };
+
+  const satiricalHeadlines = [
+    'BREAKING: Emergency committee forms subcommittee to study committee formation.',
+    'MARKETS: Oil traders describe situation as “tragic but tradable.”',
+    'ANCHOR DESK: Expert who predicted calm now predicts he was technically correct.',
+    'CAPITOL WIRE: Lawmakers demand immediate briefing, preferably before lunch.',
+    'ENERGY DESK: Pump prices rise after someone says the word chokepoint on television.',
+    'DEFENSE PANEL: Retired admiral points at map with laser pointer; futures jump 3%.',
+    'LOBBY WATCH: Consultancy releases 900-page report titled “This Is Complicated.”',
+    'PUBLIC STATEMENT: Officials assure public there is no panic, while standing near panic button.',
+    'MARKET MEMO: Analysts upgrade anxiety from hold to strong buy.',
+    'SHIPPING NEWS: Insurance underwriters discover caps lock.',
+    'THINK TANK: New white paper recommends patience, resolve, and billable hours.',
+    'BUREAUCRACY: Press release says all options are on the table, including another table.',
+    'OP-ED: Everyone agrees the problem is whoever was already blamed yesterday.',
+    'TERMINAL: Algorithm buys oil after detecting three exclamation points in a headline.'
+  ];
+  const officialStatements = [
+    'OFFICIAL STATEMENT: The situation is stable, except for the unstable parts.',
+    'PRESS ROOM: No decisions have been made, but every option has a logo.',
+    'AGENCY MEMO: A strongly worded statement has entered final formatting review.',
+    'SPOKESPERSON: We deny rumors of panic and confirm rumors of meetings.',
+    'COMMITTEE NOTE: Hearings will determine which hearing should have happened first.'
+  ];
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function pushHeadline(text){
+    newsText = text;
+    newsFlash = 210;
+    if (tickerTextEl) tickerTextEl.textContent = 'WIRE SERVICE: ' + text;
+  }
+
+
+  function initAudio(){
+    if (muted) return;
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { muted = true; return; }
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    startMusic();
+  }
+  function midiToFreq(midi){ return 440 * Math.pow(2, (midi - 69) / 12); }
+  function note(midi=69, dur=0.16, type='square', gain=0.026, delay=0){
+    if (!audioCtx || muted) return;
+    const now = audioCtx.currentTime + delay;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(midiToFreq(midi), now);
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(gain, now + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(now); osc.stop(now + dur + 0.025);
+  }
+  function beep(freq=440, dur=0.05, type='square', gain=0.035){
+    if (!audioCtx || muted) return;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = type; osc.frequency.value = freq;
+    g.gain.value = gain;
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + dur);
+  }
+  function playMusicStep(){
+    if (!audioCtx || muted) return;
+    // D Hijaz-ish 8-bit loop: Persian-inspired arcade color, not traditional performance.
+    const melody = [62,63,66,67,66,63,62,60,62,67,70,69,67,66,63,62, 74,72,70,67,66,63,62,60];
+    const bass = [50,50,55,50,48,48,55,50];
+    const m = melody[musicStep % melody.length];
+    const b = bass[Math.floor(musicStep/4) % bass.length];
+    const quiet = state === 'pause' ? 0.006 : 0.020;
+    if (state === 'play' || state === 'title' || state === 'pause') {
+      note(m, 0.12, 'square', quiet);
+      if (musicStep % 4 === 0) note(b, 0.26, 'triangle', quiet * 0.75);
+      if (musicStep % 8 === 6) note(m+12, 0.08, 'square', quiet * 0.52, 0.075);
+    }
+    musicStep++;
+  }
+  function startMusic(){
+    if (musicTimer || !audioCtx || muted) return;
+    musicTimer = setInterval(playMusicStep, 165);
+  }
+  function stopMusic(){
+    if (musicTimer) clearInterval(musicTimer);
+    musicTimer = null;
+  }
+  function toggleMute(){
+    muted = !muted;
+    if (muted) stopMusic();
+    else initAudio();
+  }
+  function noiseBoom(){
+    if (!audioCtx || muted) return;
+    const bufferSize = audioCtx.sampleRate * 0.22;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = buffer.getChannelData(0);
+    for (let i=0;i<bufferSize;i++) output[i] = (Math.random()*2-1) * (1-i/bufferSize);
+    const src = audioCtx.createBufferSource();
+    const g = audioCtx.createGain();
+    g.gain.value = 0.10;
+    src.buffer = buffer; src.connect(g); g.connect(audioCtx.destination);
+    src.start();
+  }
+
+  function reset(){
+    tick=0; score=0; distance=0; difficulty=1;
+    oilPrice=68.00; oilShock=0;
+    panicIndex=0; lobbyPressure=0; inquiryCount=0; denialCount=0;
+    pushHeadline('Markets are calm, which experts agree is suspicious.');
+    spawnMine=35; spawnBoat=180; spawnMissile=250; spawnStorm=400;
+    hazards=[]; particles=[]; warnings=[]; shake=0; flareCooldown=0;
+    Object.assign(ship, {x:W*0.22, y:H*0.50, vx:0, vy:0, speed:2.1, cargo:100, inv:80, flare:0});
+    state='play'; msg.style.display='none'; pauseShown=false;
+  }
+
+  function gameOver(win=false){
+    state = win ? 'win' : 'over';
+    const title = win ? 'OPEN WATER REACHED' : 'TANKER LOST';
+    const sub = win ? 'Cargo delivered under fire.' : 'Signal lost in the strait.';
+    panel.innerHTML = `
+      <h1>${title}</h1>
+      <h2>${sub}</h2>
+      <p>Final score: <b>${String(Math.floor(score)).padStart(6,'0')}</b></p>
+      <p>Distance: <b>${Math.floor(distance)}%</b> · Cargo: <b>${Math.max(0,Math.floor(ship.cargo))}%</b> · Oil close: <b>$${oilPrice.toFixed(2)}</b></p>
+      <p>Satire ledger: <b>${inquiryCount}</b> emergency hearings · <b>${denialCount}</b> official denials · panic index <b>${Math.floor(panicIndex)}</b>.</p>
+      <p><b>Enter</b> to run the corridor again.</p>
+      <span class="buttonline">RESTART</span>`;
+    msg.style.display='flex';
+  }
+
+  function togglePause(){
+    if (state === 'play') { state='pause'; showPause(); }
+    else if (state === 'pause') { state='play'; msg.style.display='none'; }
+  }
+  function showPause(){
+    panel.innerHTML = `
+      <h1>PAUSED</h1>
+      <h2>Radar sweep frozen. Markets continue overreacting.</h2>
+      <p>Arrow keys/WASD steer · Space flare burst · P resumes · M mutes.</p>
+      <p class="small">Tip: flares clear small missiles. They do not clear pundits.</p>`;
+    msg.style.display='flex'; pauseShown=true;
+  }
+
+  function addParticles(x,y,n,color=palette.amber, power=3){
+    for (let i=0;i<n;i++) particles.push({
+      x,y, vx:(Math.random()*2-1)*power, vy:(Math.random()*2-1)*power, life:25+Math.random()*25, color
+    });
+  }
+
+  function rects(a,b){ return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y; }
+  function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx,dy); }
+
+  function spawnHazards(){
+    difficulty = 1 + distance/55;
+    spawnMine--;
+    spawnBoat--;
+    spawnMissile--;
+    spawnStorm--;
+
+    if (spawnMine <= 0){
+      spawnMine = Math.max(18, 58 - difficulty*8 + Math.random()*20);
+      hazards.push({type:'mine', x:W+30, y:80+Math.random()*(H-160), r:13+Math.random()*8, vx:-(2.2+difficulty*0.45+Math.random()*0.5), vy:(Math.random()*2-1)*0.25, spin:Math.random()*6, dmg:18});
+    }
+    if (spawnBoat <= 0){
+      spawnBoat = Math.max(80, 210 - difficulty*20 + Math.random()*80);
+      const y = Math.random() < .5 ? 75 : H-75;
+      hazards.push({type:'boat', x:W+60, y, w:44, h:20, vx:-(2.8+difficulty*.65), vy:(y < H/2 ? 1 : -1)*(0.8+difficulty*.15), dmg:12, zig:Math.random()*80});
+    }
+    if (spawnMissile <= 0){
+      spawnMissile = Math.max(95, 290 - difficulty*28 + Math.random()*100);
+      const y = 70 + Math.random()*(H-140);
+      warnings.push({x:W-65, y, life:55, max:55});
+      hazards.push({type:'missile', x:W+100, y, w:36, h:8, vx:-(5.1+difficulty*.95), vy:0, dmg:24, armed:45});
+      beep(180, .05, 'sawtooth', .035);
+    }
+    if (spawnStorm <= 0){
+      spawnStorm = 420 + Math.random()*240;
+      hazards.push({type:'storm', x:W+90, y:80+Math.random()*(H-160), r:46+Math.random()*28, vx:-(1.45+difficulty*.15), dmg:0});
+    }
+  }
+
+  function useFlare(){
+    if (flareCooldown > 0 || ship.flare > 0 || state !== 'play') return;
+    ship.flare = 38; flareCooldown = 330;
+    addParticles(ship.x+ship.w, ship.y, 30, palette.cyan, 5);
+    beep(760,.08,'square',.045); beep(380,.08,'square',.035);
+    hazards.forEach(h => {
+      if (h.type === 'missile' && dist({x:ship.x+ship.w, y:ship.y}, h) < 230) {
+        h.dead = true; score += 850; addParticles(h.x,h.y,28,palette.red,4); noiseBoom();
+      }
+    });
+  }
+
+  function updateShip(){
+    const up = keys.has('ArrowUp') || keys.has('KeyW');
+    const down = keys.has('ArrowDown') || keys.has('KeyS');
+    const left = keys.has('ArrowLeft') || keys.has('KeyA');
+    const right = keys.has('ArrowRight') || keys.has('KeyD');
+    if (up) ship.vy -= 0.22;
+    if (down) ship.vy += 0.22;
+    if (left) ship.vx -= 0.16;
+    if (right) ship.vx += 0.22;
+    ship.vx *= 0.91; ship.vy *= 0.92;
+    ship.x += ship.vx; ship.y += ship.vy;
+    ship.x = Math.max(26, Math.min(W*.58, ship.x));
+    ship.y = Math.max(60, Math.min(H-60, ship.y));
+
+    if (ship.inv > 0) ship.inv--;
+    if (ship.flare > 0) ship.flare--;
+    if (flareCooldown > 0) flareCooldown--;
+  }
+
+  function updateHazards(){
+    hazards.forEach(h => {
+      h.x += h.vx || 0; h.y += h.vy || 0;
+      if (h.type === 'mine') h.spin += .09;
+      if (h.type === 'boat') {
+        h.zig += .08;
+        h.y += Math.sin(h.zig) * .9;
+      }
+      if (h.type === 'storm') {
+        if (dist(ship,h) < h.r+35) { ship.vy += (ship.y < h.y ? -0.055 : 0.055); ship.vx -= 0.025; }
+      }
+      if (h.type === 'missile') {
+        if (h.armed > 0) h.armed--;
+        const targetY = ship.y - h.y;
+        h.vy += Math.sign(targetY)*0.035;
+        h.vy = Math.max(-1.4, Math.min(1.4, h.vy));
+      }
+
+      if (h.type === 'mine') {
+        const mineBox = {x:h.x-h.r, y:h.y-h.r, w:h.r*2, h:h.r*2};
+        const shipBox = {x:ship.x-ship.w/2, y:ship.y-ship.h/2, w:ship.w, h:ship.h};
+        if (ship.inv <=0 && rects(shipBox,mineBox)) hit(h);
+      } else if (h.type === 'boat' || h.type === 'missile') {
+        const box = {x:h.x-h.w/2, y:h.y-h.h/2, w:h.w, h:h.h};
+        const shipBox = {x:ship.x-ship.w/2, y:ship.y-ship.h/2, w:ship.w, h:ship.h};
+        if (ship.inv <=0 && rects(shipBox,box)) hit(h);
+      }
+    });
+    hazards = hazards.filter(h => !h.dead && h.x > -140 && h.y > -140 && h.y < H+140);
+  }
+
+  function hit(h){
+    h.dead = true;
+    ship.cargo -= h.dmg || 10;
+    const spike = oilPrice * (0.045 + Math.random() * 0.075) + (1.25 + Math.random() * 3.75);
+    oilPrice += spike;
+    oilShock = 95;
+    panicIndex = Math.min(99, panicIndex + 9 + Math.random()*13 + (h.dmg || 10)/3);
+    lobbyPressure = Math.min(99, lobbyPressure + 14 + Math.random()*18);
+    inquiryCount++;
+    if (Math.random() < .62) denialCount++;
+    pushHeadline(pick(satiricalHeadlines));
+    ship.inv = 75;
+    shake = 20;
+    addParticles(ship.x,ship.y,38,palette.amber,4.5);
+    warnings.push({x:W-65, y:ship.y, life:42, max:42, market:true});
+    noiseBoom();
+    beep(920,.08,'sawtooth',.05);
+    beep(640,.10,'square',.035);
+    if (ship.cargo <= 0) gameOver(false);
+  }
+
+  function updateParticles(){
+    particles.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.vx*=.97; p.vy*=.97; p.life--; });
+    particles = particles.filter(p => p.life > 0);
+    warnings.forEach(w => w.life--);
+    warnings = warnings.filter(w => w.life > 0);
+  }
+
+  function update(){
+    if (state !== 'play') return;
+    tick++;
+    score += 1 + difficulty*.6;
+    distance += 0.019 + difficulty*0.003;
+    if (distance >= 100) return gameOver(true);
+    spawnHazards();
+    updateShip();
+    updateHazards();
+    updateParticles();
+    if (shake > 0) shake--;
+    if (oilShock > 0) oilShock--;
+    if (tick % 38 === 0) beep(75 + difficulty*8, .025, 'square', .012);
+    if (tick % 90 === 0) {
+      panicIndex = Math.max(0, panicIndex - 1.25);
+      lobbyPressure = Math.max(0, lobbyPressure - 0.8);
+    }
+    if (tick % 540 === 0 && oilShock <= 0) pushHeadline(Math.random() < .35 ? pick(officialStatements) : pick(satiricalHeadlines));
+    if (newsFlash > 0) newsFlash--;
+    tickerOffset = (tickerOffset + 1.35 + panicIndex/120) % (W + 900);
+  }
+
+  function drawSea(){
+    ctx.fillStyle = palette.sea;
+    ctx.fillRect(0,0,W,H);
+
+    // shore silhouettes: Iran north, Oman south, stylized, non-map-accurate
+    ctx.fillStyle = '#201408';
+    ctx.beginPath();
+    ctx.moveTo(0,0); ctx.lineTo(W,0);
+    for (let x=W; x>=0; x-=55) ctx.lineTo(x, 30 + Math.sin((x+tick)*.012)*18 + Math.random()*1.5);
+    ctx.lineTo(0,0); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(0,H); ctx.lineTo(W,H);
+    for (let x=W; x>=0; x-=55) ctx.lineTo(x, H - (34 + Math.cos((x+tick)*.011)*17 + Math.random()*1.5));
+    ctx.lineTo(0,H); ctx.fill();
+
+    // shipping corridor
+    ctx.strokeStyle = '#0f4e5866';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([16,18]);
+    ctx.beginPath(); ctx.moveTo(0,H*.37); ctx.lineTo(W,H*.37); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,H*.63); ctx.lineTo(W,H*.63); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // moving wave pixels
+    for(let i=0;i<72;i++){
+      const x = (i*97 - (tick*2.2 % 97));
+      const y = 65 + ((i*47 + tick*0.55) % (H-130));
+      ctx.fillStyle = i%3===0 ? '#1db7c055' : '#14606a77';
+      ctx.fillRect(x,y,20,2);
+    }
+  }
+
+  function drawShip(){
+    ctx.save();
+    ctx.translate(ship.x, ship.y);
+    ctx.rotate(ship.vy * .035);
+    const flicker = ship.inv > 0 && Math.floor(tick/4)%2===0;
+    ctx.strokeStyle = flicker ? palette.white : palette.green;
+    ctx.fillStyle = '#0c2d25';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-ship.w/2, -ship.h/2);
+    ctx.lineTo(ship.w/2-14, -ship.h/2);
+    ctx.lineTo(ship.w/2+16, 0);
+    ctx.lineTo(ship.w/2-14, ship.h/2);
+    ctx.lineTo(-ship.w/2, ship.h/2);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#143c32';
+    ctx.fillRect(-22,-10,28,20);
+    ctx.fillStyle = palette.amber;
+    ctx.fillRect(12,-8,9,16);
+    ctx.fillRect(25,-7,9,14);
+    ctx.strokeStyle = '#ffcc3388';
+    ctx.beginPath(); ctx.moveTo(-ship.w/2-18, -7); ctx.lineTo(-ship.w/2-38, -14); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-ship.w/2-18, 7); ctx.lineTo(-ship.w/2-38, 14); ctx.stroke();
+    if (ship.flare > 0) {
+      ctx.strokeStyle = palette.cyan; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(ship.w/2+22,0, ship.flare*5.5, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(ship.w/2+22,0, ship.flare*2.5, 0, Math.PI*2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawMine(h){
+    ctx.save(); ctx.translate(h.x,h.y); ctx.rotate(h.spin);
+    ctx.strokeStyle = palette.red; ctx.lineWidth = 2;
+    ctx.fillStyle = '#210909';
+    ctx.beginPath(); ctx.arc(0,0,h.r,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    for (let i=0;i<8;i++){
+      ctx.rotate(Math.PI/4);
+      ctx.beginPath(); ctx.moveTo(h.r-2,0); ctx.lineTo(h.r+8,0); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  function drawBoat(h){
+    ctx.save(); ctx.translate(h.x,h.y);
+    ctx.strokeStyle = palette.amber; ctx.fillStyle = '#281e08'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(-22,-10); ctx.lineTo(17,-10); ctx.lineTo(28,0); ctx.lineTo(17,10); ctx.lineTo(-22,10); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = palette.red; ctx.fillRect(-4,-7,14,14);
+    ctx.restore();
+  }
+  function drawMissile(h){
+    ctx.save(); ctx.translate(h.x,h.y);
+    ctx.strokeStyle = palette.red; ctx.fillStyle = '#301010'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(-20,-5); ctx.lineTo(15,-5); ctx.lineTo(24,0); ctx.lineTo(15,5); ctx.lineTo(-20,5); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = palette.amber;
+    ctx.beginPath(); ctx.moveTo(-22,0); ctx.lineTo(-48 + Math.random()*12, Math.random()*10-5); ctx.stroke();
+    ctx.restore();
+  }
+  function drawStorm(h){
+    ctx.save(); ctx.translate(h.x,h.y);
+    ctx.strokeStyle = '#93f5ff44'; ctx.fillStyle = '#3ee7ff12'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(0,0,h.r,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#93f5ff66';
+    for (let i=0;i<8;i++){
+      const a = i*Math.PI/4 + tick*.025;
+      ctx.beginPath(); ctx.moveTo(Math.cos(a)*8, Math.sin(a)*8); ctx.lineTo(Math.cos(a)*(h.r-8), Math.sin(a)*(h.r-8)); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawHazards(){
+    hazards.forEach(h => {
+      if (h.type === 'mine') drawMine(h);
+      if (h.type === 'boat') drawBoat(h);
+      if (h.type === 'missile') drawMissile(h);
+      if (h.type === 'storm') drawStorm(h);
+    });
+  }
+
+  function drawParticles(){
+    particles.forEach(p => {
+      ctx.globalAlpha = Math.max(0,p.life/45);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x,p.y,3,3);
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  function drawWarnings(){
+    warnings.forEach(w => {
+      const blink = Math.floor(tick/5)%2===0;
+      ctx.strokeStyle = blink ? palette.red : palette.amber;
+      ctx.fillStyle = blink ? palette.red : palette.amber;
+      ctx.lineWidth=2;
+      if (w.market) {
+        ctx.font = 'bold 16px Courier New';
+        ctx.fillText('OIL SPIKE', W-142, w.y-18);
+        ctx.fillText('+$ / BBL', W-134, w.y+2);
+        ctx.strokeRect(W-150, w.y-36, 118, 52);
+      } else {
+        ctx.beginPath(); ctx.moveTo(W-80,w.y-22); ctx.lineTo(W-40,w.y); ctx.lineTo(W-80,w.y+22); ctx.stroke();
+        ctx.font = 'bold 16px Courier New'; ctx.fillText('LOCK', W-128, w.y+5);
+      }
+    });
+  }
+
+  function drawRadar(){
+    const x=88, y=H-88, r=46;
+    ctx.save();
+    ctx.strokeStyle=palette.green; ctx.lineWidth=2; ctx.globalAlpha=.75;
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x,y,r*.55,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x-r,y); ctx.lineTo(x+r,y); ctx.moveTo(x,y-r); ctx.lineTo(x,y+r); ctx.stroke();
+    const a=tick*.055;
+    ctx.strokeStyle=palette.cyan;
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+Math.cos(a)*r, y+Math.sin(a)*r); ctx.stroke();
+    hazards.slice(0,16).forEach(h => {
+      const rx = x + (h.x-W/2)/W*r*2;
+      const ry = y + (h.y-H/2)/H*r*2;
+      if (Math.hypot(rx-x,ry-y) < r) {
+        ctx.fillStyle = h.type==='storm' ? palette.cyan : palette.red;
+        ctx.fillRect(rx-2,ry-2,4,4);
+      }
+    });
+    ctx.globalAlpha=1;
+    ctx.font='bold 12px Courier New'; ctx.fillStyle=palette.green; ctx.fillText('CRT RADAR',x-36,y+r+18);
+    ctx.restore();
+  }
+
+  function drawTextOverlays(){
+    ctx.font = 'bold 16px Courier New';
+    ctx.fillStyle = '#39ff8877';
+    ctx.fillText('NORTH COAST', 24, 46);
+    ctx.fillText('SOUTH COAST', 24, H-28);
+
+    const barW = 156, barH = 12;
+    const x = W - barW - 24, y = H - 42;
+    ctx.strokeStyle=palette.green; ctx.strokeRect(x,y,barW,barH);
+    ctx.fillStyle= flareCooldown > 0 ? '#335d44' : palette.cyan;
+    ctx.fillRect(x+2,y+2, (barW-4)*(1-flareCooldown/330), barH-4);
+    ctx.fillStyle=palette.green; ctx.font='bold 12px Courier New'; ctx.fillText('FLARE', x, y-6);
+
+    const marketX = W - 220, marketY = 76;
+    ctx.strokeStyle = oilShock > 0 ? palette.amber : '#39ff8855';
+    ctx.strokeRect(marketX, marketY, 196, 70);
+    ctx.font = 'bold 12px Courier New';
+    ctx.fillStyle = oilShock > 0 ? palette.amber : palette.green;
+    ctx.fillText('FUTURES TERMINAL', marketX+10, marketY+17);
+    const line = oilShock > 0 ? 'PRICE SHOCK ↑↑' : 'MARKET WATCH';
+    ctx.fillText(line, marketX+10, marketY+36);
+    ctx.fillText('LOBBY ' + String(Math.floor(lobbyPressure)).padStart(2,'0') + '  HEARINGS ' + inquiryCount, marketX+10, marketY+55);
+
+    // Satirical panic gauges
+    const satX = 24, satY = 78;
+    ctx.strokeStyle = panicIndex > 55 ? palette.red : '#39ff8855';
+    ctx.strokeRect(satX, satY, 182, 70);
+    ctx.fillStyle = panicIndex > 55 ? palette.red : palette.green;
+    ctx.fillText('PUBLIC PANIC INDEX', satX+10, satY+17);
+    ctx.strokeRect(satX+10, satY+27, 154, 12);
+    ctx.fillRect(satX+12, satY+29, Math.min(150, panicIndex*1.5), 8);
+    ctx.fillText('DENIALS ' + denialCount + '  SPIN ' + (Math.floor(tick/30)%10), satX+10, satY+58);
+
+    if (newsFlash > 0) {
+      const bx = 170, by = H - 120;
+      ctx.strokeStyle = Math.floor(tick/8)%2 ? palette.amber : palette.red;
+      ctx.fillStyle = 'rgba(0,0,0,.64)';
+      ctx.fillRect(bx, by, W-340, 58);
+      ctx.strokeRect(bx, by, W-340, 58);
+      ctx.font = 'bold 14px Courier New';
+      ctx.fillStyle = palette.amber;
+      ctx.fillText('SAT-NEWS FLASH', bx+14, by+20);
+      ctx.fillStyle = palette.green;
+      const short = newsText.length > 68 ? newsText.slice(0,65) + '...' : newsText;
+      ctx.fillText(short, bx+14, by+43);
+    }
+  }
+
+  function render(){
+    ctx.save();
+    if (shake>0) ctx.translate((Math.random()*2-1)*shake*.45, (Math.random()*2-1)*shake*.45);
+    drawSea();
+    drawWarnings();
+    drawHazards();
+    drawShip();
+    drawParticles();
+    drawRadar();
+    drawTextOverlays();
+    ctx.restore();
+
+    scoreEl.textContent = 'SCORE ' + String(Math.floor(score)).padStart(6,'0');
+    cargoEl.textContent = 'CARGO ' + String(Math.max(0,Math.floor(ship.cargo))).padStart(3,'0') + '%';
+    oilEl.textContent = 'OIL $' + oilPrice.toFixed(2);
+    oilEl.classList.toggle('oilShock', oilShock > 0);
+    speedEl.textContent = 'KNOTS ' + String(Math.floor(8 + difficulty*3 + Math.abs(ship.vx))).padStart(2,'0');
+    distEl.textContent = 'DIST ' + String(Math.min(100,Math.floor(distance))).padStart(3,'0') + '%';
+    panicEl.textContent = 'PANIC ' + String(Math.floor(panicIndex)).padStart(2,'0');
+    panicEl.classList.toggle('panicHot', panicIndex > 55);
+    if (tickerTextEl) {
+      tickerTextEl.style.transform = 'translateX(' + (-tickerOffset % (W + 900)) + 'px)';
+    }
+  }
+
+  function loop(){ update(); render(); requestAnimationFrame(loop); }
+
+  window.addEventListener('keydown', e => {
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();
+    if(e.code === 'Enter') { initAudio(); if(state !== 'play') reset(); }
+    if(e.code === 'KeyP') togglePause();
+    if(e.code === 'KeyM') toggleMute();
+    if(e.code === 'Space') { initAudio(); useFlare(); }
+    keys.add(e.code);
+  });
+  window.addEventListener('keyup', e => keys.delete(e.code));
+  msg.addEventListener('click', () => { initAudio(); if(state !== 'play') reset(); });
+
+  document.querySelectorAll('.tbtn').forEach(btn => {
+    const code = btn.dataset.key;
+    const press = e => { e.preventDefault(); initAudio(); keys.add(code); if(code==='Space') useFlare(); };
+    const release = e => { e.preventDefault(); keys.delete(code); };
+    btn.addEventListener('pointerdown', press);
+    btn.addEventListener('pointerup', release);
+    btn.addEventListener('pointercancel', release);
+    btn.addEventListener('pointerleave', release);
+  });
+
+  // opening attract-mode background
+  for(let i=0;i<8;i++) hazards.push({type:'mine', x:W+Math.random()*W, y:80+Math.random()*(H-160), r:13+Math.random()*7, vx:-1.3-Math.random(), vy:0, spin:Math.random()*6, dmg:0});
+  loop();
+})();
+</script>
+</body>
+</html>
